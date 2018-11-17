@@ -1,52 +1,228 @@
-swagger: "2.0"
+openapi: 3.0.0
 info:
-  title: beepbeep Data Service
-  description: returns info about beepbeep
+  title: BeepBeep Data Service
+  description: Returns info about BeepBeep registered users and their runs
   license:
     name: APLv2
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 0.1.0
-basePath: /api
+  version: 0.1.9
+
+
+servers:
+  - url: 0.0.0.0:5002
+
+components:
+  schemas:
+    Run:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The ID of the run.
+        title:
+          type: string
+          description: A title for the run
+        description:
+          type: string
+          description: A more detailed description for the run
+        strava_id:
+          type: integer
+          description: The id of the run when fetched from Strava
+        distance:
+          type: number
+          format: float
+          description: The distance the user run expressed in meters
+        start_date:
+          type: string
+          format: date-time
+          description: The date when this run was made
+        elapsed_time:
+          type: integer
+          description: The total time that this run took to complete
+        average_speed:
+          type: number
+          format: float
+          description: The average speed of the run
+        total_elevation_gain:
+          type: number
+          format: float
+          description: The total elevation gained during the run
+        runner_id:
+          type: integer
+          description: The id of the user who made this run
+      required:
+        - id
+        - title
+        - description
+        - strava_id
+        - distance
+        - start_date
+        - elapsed_time
+        - average_speed
+        - total_elevation_gain
+        - runner_id
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The ID of the user
+        email:
+          type: string
+          format: email
+          description: The email of the user
+        firstname:
+          type: string
+          description: The firstname of the user
+        lastname:
+          type: string
+          description: The lastname of the user
+        strava_token:
+          type: string
+          description: The strava_token of the user
+        age:
+          type: integer
+          description: The age of the user
+        weight:
+          type: number
+          format: float
+          description: The weight of the user
+        max_hr:
+          type: integer
+          description: The max heartrate of the user
+        rest_hr:
+          type: integer
+          description: The at rest heartrate of the user
+        vo2max:
+          type: number
+          format: float
+          description: I have no clue what this is
+      required:
+        - id
+        - email
+        - firstname
+        - lastname
+        - age
+        - weight
+        - max_hr
+        - rest_hr
+        - vo2max
+
+    Error:
+      type: object
+      properties:
+        response-code:
+          type: integer
+          description: The code of the HTTP response error
+        message:
+          type: string
+          description: Additional description about the error
+      required:
+        - response-code
+        - message
+
+
+
 paths:
     /runs/{runner_id}:
       get:
        operationId: getRuns
-       description: Get Runs
-       produces:
-       - application/json
+       description: Get all the run of an user with respect to some criteria
        parameters:
-          - name: runner_id
-            in: path
+          - in: path
+            name: runner_id
             description: ID of Runner
             required: true
-            type: integer
+            schema:
+              type: integer
+          - name: date-start
+            in: query
+            description: If this parameter is set all the runs returned will have a start_date not less than date-start
+            schema:
+              type: string
+              format: date
+            required: false
+          - name: date-finish
+            in: query
+            description: If this parameter is set all the runs returned will have a start_date not greater than date-finish
+            schema:
+              type: string
+              format: date
+            required: false
        responses:
+          '400':
+            description: Bad request. Error parsing one of the paramenter of the request.
           '200':
-            description: List of runs
+            description: A, possibly empty, list of runs
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Run'
+                  minItems: 0
+
     /add_runs:
       post:
         operationId: addRuns
-        description: Adds runs
-        produces:
-        - application/json
+        description: Adds a bunch of runs to different users
+        requestBody:
+          description: An object of array of objects that describe all the runs of some users
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Run'
+                  minItems: 1
         responses:
-          '200':
-            description: List of runs ids
-            schema:
-                type: array
-                items:
-                    type: integer
+          '204':
+            description: The runs where added succesfully
+
     /users:
       get:
         operationId: getUsers
-        description: Returns a list of users
-        produces:
-        - application/json
+        description: Returns the list of all theusers
         responses:
           '200':
-            description: List of Ids
+            description: A, possibly empty, list of users
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    users:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/User'
+
+    /user/{user_id}:
+      get:
+        operationId: getSingleUser
+        description: Returns a specific User
+        parameters:
+          - in: path
+            name: user_id
+            description: The id of the user we want the informations
+            required: true
             schema:
-                type: array
-                items:
-                    type: integer
+              type: integer
+        responses:
+          '404':
+            description: It was impossible to find an user with the specified ID
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+          '200':
+            description: Information about an User
+            content:
+              application/json:
+                schema:
+                    $ref: '#/components/schemas/User'
+
 

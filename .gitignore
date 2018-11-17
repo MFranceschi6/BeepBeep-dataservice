@@ -1,0 +1,13 @@
+.tox/
+
+*_data.egg*
+
+.bin/
+
+.include/
+
+.lib/
+
+.src/
+
+requirements.txte

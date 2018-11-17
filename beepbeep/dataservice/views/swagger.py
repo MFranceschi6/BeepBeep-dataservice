@@ -37,7 +37,7 @@ def add_runs():
     if added > 0:
         db.session.commit()
 
-    return {'added': 1}
+    return "", 204
 
 
 @api.operation('getRuns')
@@ -56,3 +56,12 @@ def get_users():
     if page != 0:
         users = users.offset(page * page_size)
     return {'users': [user.to_json(secure=True) for user in users]}
+
+
+@api.operation('getSingleUser')
+def get_single_user(user_id):
+    q = db.session.query(User).filter(User.id == user_id)
+    if q.count() == 0:
+        res = {'response-code': 404, 'message': 'No user with ID '+str(user_id)}
+        return res, 404
+    return q.first().to_json(secure=False)
