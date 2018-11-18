@@ -5,7 +5,6 @@ from decimal import Decimal
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
 
-
 db = SQLAlchemy()
 
 
@@ -15,7 +14,7 @@ class User(db.Model):
     email = db.Column(db.Unicode(128), nullable=False)
     firstname = db.Column(db.Unicode(128))
     lastname = db.Column(db.Unicode(128))
-    #password = db.Column(db.Unicode(128))
+    # password = db.Column(db.Unicode(128))
     strava_token = db.Column(db.String(128))
     age = db.Column(db.Integer)
     weight = db.Column(db.Numeric(4, 1))
@@ -36,6 +35,19 @@ class User(db.Model):
         if secure:
             res['strava_token'] = self.strava_token
         return res
+
+    @staticmethod
+    def from_json(schema):
+        u = User()
+        for attr in ('email', 'firstname', 'lastname', 'age', 'weight',
+                     'max_hr', 'rest_hr', 'vo2max'):
+            setattr(u, attr, schema[attr])
+
+        if schema['strava_token'] is not None:
+            setattr(u, 'strava_token', schema['strava_token'])
+        if schema['id'] is not None:
+            setattr(u, 'id', schema['id'])
+        return u
 
     def get_id(self):
         return self.id
@@ -68,10 +80,30 @@ class Run(db.Model):
             res[attr] = value
         return res
 
+    @staticmethod
+    def from_json(schema, runner_id=None):
+        r = Run()
+        for attr in ('title', 'description', 'strava_id', 'distance', 'elapsed_time', 'average_speed',
+                     'average_heartrate', 'total_elevation_gain'):
+            setattr(r, attr, schema[attr])
+
+        setattr(r, 'start_date', datetime.fromtimestamp(schema['start_date']))
+        if schema['runned_id'] is not None:
+            setattr(r, 'runner_id', schema['runner_id'])
+        elif runner_id is not None:
+            setattr(r, 'runner_id', runner_id)
+        else:
+            raise ValueError("runner_id not set")
+
+        if schema['id'] is not None:
+            setattr(r, 'id', schema['id'])
+
+        return r
+
 
 def init_database():
     exists = db.session.query(User).filter(User.email == 'example@example.com')
-    if exists.all() != []:
+    if exists.all():
         return
 
     user = User()
