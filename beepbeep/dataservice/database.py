@@ -43,9 +43,9 @@ class User(db.Model):
                      'max_hr', 'rest_hr', 'vo2max'):
             setattr(u, attr, schema[attr])
 
-        if schema['strava_token'] is not None:
+        if 'strava_token' in schema:
             setattr(u, 'strava_token', schema['strava_token'])
-        if schema['id'] is not None:
+        if 'id' in schema:
             setattr(u, 'id', schema['id'])
         return u
 
@@ -88,14 +88,14 @@ class Run(db.Model):
             setattr(r, attr, schema[attr])
 
         setattr(r, 'start_date', datetime.fromtimestamp(schema['start_date']))
-        if schema['runned_id'] is not None:
+        if 'runned_id' in schema:
             setattr(r, 'runner_id', schema['runner_id'])
         elif runner_id is not None:
             setattr(r, 'runner_id', runner_id)
         else:
             raise ValueError("runner_id not set")
 
-        if schema['id'] is not None:
+        if 'id' in schema:
             setattr(r, 'id', schema['id'])
 
         return r
