@@ -1,12 +1,13 @@
 import os
-from datetime import datetime
 
 from flakon import SwaggerBlueprint
 from flask import request, jsonify
 from beepbeep.dataservice.database import db, User, Run
+from sqlalchemy import and_
+from datetime import datetime
+from .util import bad_response
 import json
 from json import loads
-
 
 HERE = os.path.dirname(__file__)
 YML = os.path.join(HERE, '..', 'static', 'api.yaml')
@@ -19,19 +20,8 @@ def add_runs():
     for user, runs in request.json.items():
         runner_id = int(user)
         for run in runs:
-            db_run = Run()
-            db_run.strava_id = run['strava_id']
-            db_run.distance = run['distance']
-            db_run.start_date = datetime.fromtimestamp(run['start_date'])
-            db_run.elapsed_time = run['elapsed_time']
-            db_run.average_speed = run['average_speed']
-            db_run.average_heartrate = run['average_heartrate'] 
-            db_run.total_elevation_gain = run['total_elevation_gain']
-            db_run.runner_id = runner_id
-            db_run.title = run['title']
-            db_run.description = run['description']
+            db_run = Run.from_json(run, runner_id)
             db.session.add(db_run)
-
             added += 1
 
     if added > 0:
@@ -42,7 +32,23 @@ def add_runs():
 
 @api.operation('getRuns')
 def get_runs(runner_id):
-    runs = db.session.query(Run).filter(Run.runner_id == runner_id)
+    start_date = request.args.get('start-date')
+    finish_date = request.args.get('finish-date')
+    fun = True
+    try:
+        if start_date is not None:
+            start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
+            fun = and_(fun, start_date <= Run.start_date)
+    except ValueError:
+        return bad_response(404, 'Error in parsing the start_date parameter: ' + start_date + ' is not a valid date')
+    try:
+        if finish_date is not None:
+            finish_date = datetime.strptime(finish_date, '%Y-%m-%dT%H:%M:%SZ')
+            fun = and_(fun, Run.start_date <= start_date)
+    except ValueError:
+        return bad_response(404, 'Error in parsing the finish_date parameter: ' + finish_date + ' is not a valid date')
+    fun = and_(fun, Run.runner_id == runner_id)
+    runs = db.session.query(Run).filter(fun)
     return jsonify([run.to_json() for run in runs])
 
 
@@ -62,6 +68,47 @@ def get_users():
 def get_single_user(user_id):
     q = db.session.query(User).filter(User.id == user_id)
     if q.count() == 0:
-        res = {'response-code': 404, 'message': 'No user with ID '+str(user_id)}
-        return res, 404
+        return bad_response(404, 'No user with ID ' + str(user_id))
     return q.first().to_json(secure=False)
+
+
+@api.operation('addUser')
+def add_single_user():
+    u = User.from_json(request.json)
+    q = db.session.query(User).filter(User.email == u.email)
+    if q.count > 0:
+        return bad_response(400, 'Error, exists already an user with the email: ' + u.email)
+    db.session.add(u)
+    db.session.commit()
+    return "", 204
+
+
+@api.operation('updateSingleUser')
+def update_single_user(user_id):
+    u = User.from_json(request.json)
+    if user_id != u.id:
+        return bad_response(400, 'user_id mismatch: user_id in path: ' + str(user_id) + ', in json: ' + str(u.id))
+    q = db.query(User).filter(User.id == user_id)
+    if q.count() == 0:
+        return bad_response(404, 'No user with  ID ' + str(user_id))
+    us = q.first()
+    if us.email != u.email:
+        q = db.query(User).filter(User.email == u.email)
+        if q.count() > 0:
+            return bad_response(400, 'Trying to update the email of the user with: ' + u.email + 'but another user '
+                                                                                                 'already has that '
+                                                                                                 'email')
+    for attr in User.__table__.columns:
+        setattr(us, attr, getattr(u, attr))
+    db.session.commit()
+    return "", 204
+
+
+@api.operation('deleteSingleUser')
+def delete_single_user(user_id):
+    q = db.query(User).filter(User.id == user_id)
+    if q.count() == 0:
+        return bad_response(404, 'No user with ID ' + str(user_id))
+    db.session.delete(q.first())
+    db.session.commit()
+    return "", 204

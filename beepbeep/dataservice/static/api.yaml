@@ -16,9 +16,6 @@ components:
     Run:
       type: object
       properties:
-        id:
-          type: integer
-          description: The ID of the run.
         title:
           type: string
           description: A title for the run
@@ -33,9 +30,9 @@ components:
           format: float
           description: The distance the user run expressed in meters
         start_date:
-          type: string
-          format: date-time
-          description: The date when this run was made
+          type: integer
+          format: timestamp
+          description: The timestamp when this run was made
         elapsed_time:
           type: integer
           description: The total time that this run took to complete
@@ -51,7 +48,6 @@ components:
           type: integer
           description: The id of the user who made this run
       required:
-        - id
         - title
         - description
         - strava_id
@@ -60,14 +56,23 @@ components:
         - elapsed_time
         - average_speed
         - total_elevation_gain
-        - runner_id
 
-    User:
+    ResponseRun:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: The ID of the run.
+          required:
+            - id
+        - $ref: '#/components/schemas/Run'
+
+
+
+    UserTemplate:
       type: object
       properties:
-        id:
-          type: integer
-          description: The ID of the user
         email:
           type: string
           format: email
@@ -99,7 +104,6 @@ components:
           format: float
           description: I have no clue what this is
       required:
-        - id
         - email
         - firstname
         - lastname
@@ -108,6 +112,27 @@ components:
         - max_hr
         - rest_hr
         - vo2max
+
+    ExistingUser:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: the ID of the user
+          required:
+            - id
+        - $ref: '#/components/schemas/UserTemplate'
+
+    User:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: the ID of the user
+        - $ref: '#/components/schemas/UserTemplate'
+
 
     Error:
       type: object
@@ -121,6 +146,28 @@ components:
       required:
         - response-code
         - message
+
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    BadRequest:
+      description: Something went wrong trying to parse the request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
 
 
 
@@ -136,23 +183,21 @@ paths:
             required: true
             schema:
               type: integer
-          - name: date-start
+          - name: start-date
             in: query
             description: If this parameter is set all the runs returned will have a start_date not less than date-start
             schema:
               type: string
               format: date
-            required: false
-          - name: date-finish
+          - name: finish-date
             in: query
             description: If this parameter is set all the runs returned will have a start_date not greater than date-finish
             schema:
               type: string
               format: date
-            required: false
        responses:
           '400':
-            description: Bad request. Error parsing one of the paramenter of the request.
+            $ref: '#/components/responses/BadRequest'
           '200':
             description: A, possibly empty, list of runs
             content:
@@ -160,8 +205,9 @@ paths:
                 schema:
                   type: array
                   items:
-                    $ref: '#/components/schemas/Run'
+                    $ref: '#/components/schemas/ResponseRun'
                   minItems: 0
+
 
     /add_runs:
       post:
@@ -181,12 +227,13 @@ paths:
                   minItems: 1
         responses:
           '204':
-            description: The runs where added succesfully
+            description: The runs were added succesfully
+
 
     /users:
       get:
         operationId: getUsers
-        description: Returns the list of all theusers
+        description: Returns the list of all the users
         responses:
           '200':
             description: A, possibly empty, list of users
@@ -198,31 +245,70 @@ paths:
                     users:
                       type: array
                       items:
-                        $ref: '#/components/schemas/User'
+                        $ref: '#/components/schemas/ExistingUser'
+
+      post:
+        operationId: addUser
+        description: Register a new User inside the Data Service
+        requestBody:
+          description: The description of the new User to add into the DataService
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        responses:
+          '204':
+            description: The user was added succesfully
+          '400':
+            $ref: '#/components/responses/BadRequest'
+
 
     /user/{user_id}:
+      parameters:
+      - in: path
+        name: user_id
+        description: The id of the user
+        required: true
+        schema:
+          type: integer
+
       get:
         operationId: getSingleUser
         description: Returns a specific User
-        parameters:
-          - in: path
-            name: user_id
-            description: The id of the user we want the informations
-            required: true
-            schema:
-              type: integer
         responses:
-          '404':
-            description: It was impossible to find an user with the specified ID
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/Error'
           '200':
             description: Information about an User
             content:
               application/json:
                 schema:
-                    $ref: '#/components/schemas/User'
+                    $ref: '#/components/schemas/ExistingUser'
+          '404':
+            $ref: '#/components/responses/NotFound'
 
+      put:
+        operationId: updateSingleUser
+        description: Update the information of a single User
+        requestBody:
+          description: The description of the update information of the User
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExistingUser'
+        responses:
+          '204':
+            description: User succesfully updated
+          '400':
+            $ref: '#/components/responses/BadRequest'
+          '404':
+            $ref: '#/components/responses/NotFound'
 
+      delete:
+        operationId: deleteSingleUser
+        description: Remove an User from the service
+        responses:
+          '204':
+            description: User succesfully removed
+          '404':
+            $ref: '#/components/responses/NotFound'
