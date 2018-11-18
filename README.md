@@ -2,7 +2,7 @@
 
 ## API Documentation :trollface:
 
-This microservice provide a standard API, the documentation can be found at this [temporary page](https://mfranceschi6.github.io/slate/)
+This microservice provide a standard API, the documentation can be found at this [page](https://mfranceschi6.github.io/BeepBeep-dataservice)
 
 ## How to run It :smile:
 
