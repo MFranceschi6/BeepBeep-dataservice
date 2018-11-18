@@ -1,52 +1,343 @@
-swagger: "2.0"
+openapi: 3.0.0
 info:
-  title: beepbeep Data Service
-  description: returns info about beepbeep
+  title: BeepBeep Data Service
+  description: Returns info about BeepBeep registered users and their runs
   license:
     name: APLv2
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: 0.1.0
-basePath: /api
+  version: 0.1.9
+
+
+servers:
+  - url: 0.0.0.0:5002
+
+components:
+  schemas:
+    Run:
+      type: object
+      properties:
+        title:
+          type: string
+          description: A title for the run
+        description:
+          type: string
+          description: A more detailed description for the run
+        strava_id:
+          type: integer
+          description: The id of the run when fetched from Strava
+        distance:
+          type: number
+          format: float
+          description: The distance the user run expressed in meters
+        start_date:
+          type: integer
+          format: timestamp
+          description: The timestamp when this run was made
+        elapsed_time:
+          type: integer
+          description: The total time that this run took to complete
+        average_speed:
+          type: number
+          format: float
+          description: The average speed of the run
+        total_elevation_gain:
+          type: number
+          format: float
+          description: The total elevation gained during the run
+        runner_id:
+          type: integer
+          description: The id of the user who made this run
+      required:
+        - title
+        - description
+        - strava_id
+        - distance
+        - start_date
+        - elapsed_time
+        - average_speed
+        - total_elevation_gain
+
+    ResponseRun:
+      type: object
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: The ID of the Run
+        - $ref: '#/components/schemas/Run'
+
+
+
+
+
+    UserTemplate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: The email of the user
+        firstname:
+          type: string
+          description: The firstname of the user
+        lastname:
+          type: string
+          description: The lastname of the user
+        strava_token:
+          type: string
+          description: The strava_token of the user
+        age:
+          type: integer
+          description: The age of the user
+        weight:
+          type: number
+          format: float
+          description: The weight of the user
+        max_hr:
+          type: integer
+          description: The max heartrate of the user
+        rest_hr:
+          type: integer
+          description: The at rest heartrate of the user
+        vo2max:
+          type: number
+          format: float
+          description: I have no clue what this is
+      required:
+        - email
+        - firstname
+        - lastname
+        - age
+        - weight
+        - max_hr
+        - rest_hr
+        - vo2max
+
+    ExistingUser:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: the ID of the user
+          required:
+            - id
+        - $ref: '#/components/schemas/UserTemplate'
+
+    User:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: the ID of the user
+        - $ref: '#/components/schemas/UserTemplate'
+
+
+    Error:
+      type: object
+      properties:
+        response-code:
+          type: integer
+          description: The code of the HTTP response error
+        message:
+          type: string
+          description: Additional description about the error
+      required:
+        - response-code
+        - message
+
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    BadRequest:
+      description: Something went wrong trying to parse the request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+
+
 paths:
-    /runs/{runner_id}:
-      get:
-       operationId: getRuns
-       description: Get Runs
-       produces:
-       - application/json
-       parameters:
-          - name: runner_id
-            in: path
-            description: ID of Runner
-            required: true
-            type: integer
-       responses:
-          '200':
-            description: List of runs
     /add_runs:
       post:
         operationId: addRuns
-        description: Adds runs
-        produces:
-        - application/json
+        description: Adds a bunch of runs to different users
+        requestBody:
+          description: An object of array of objects that describe all the runs of some users
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Run'
+                  minItems: 1
         responses:
-          '200':
-            description: List of runs ids
-            schema:
-                type: array
-                items:
-                    type: integer
+          '204':
+            description: The runs were added succesfully
+
+
     /users:
       get:
         operationId: getUsers
-        description: Returns a list of users
-        produces:
-        - application/json
+        description: Returns the list of all the users
         responses:
           '200':
-            description: List of Ids
-            schema:
-                type: array
-                items:
-                    type: integer
+            description: A, possibly empty, list of users
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    users:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/ExistingUser'
 
+      post:
+        operationId: addUser
+        description: Register a new User inside the Data Service
+        requestBody:
+          description: The description of the new User to add into the DataService
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        responses:
+          '204':
+            description: The user was added succesfully
+          '400':
+            $ref: '#/components/responses/BadRequest'
+
+
+    /user/{user_id}:
+      parameters:
+      - in: path
+        name: user_id
+        description: The id of the user
+        required: true
+        schema:
+          type: integer
+
+      get:
+        operationId: getSingleUser
+        description: Returns a specific User
+        responses:
+          '200':
+            description: Information about an User
+            content:
+              application/json:
+                schema:
+                    $ref: '#/components/schemas/ExistingUser'
+          '404':
+            $ref: '#/components/responses/NotFound'
+
+      put:
+        operationId: updateSingleUser
+        description: Update the information of a single User
+        requestBody:
+          description: The description of the update information of the User
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExistingUser'
+        responses:
+          '204':
+            description: User succesfully updated
+          '400':
+            $ref: '#/components/responses/BadRequest'
+          '404':
+            $ref: '#/components/responses/NotFound'
+
+      delete:
+        operationId: deleteSingleUser
+        description: Remove an User from the service
+        responses:
+          '204':
+            description: User succesfully removed
+          '404':
+            $ref: '#/components/responses/NotFound'
+
+    /user/{user_id}/runs:
+      get:
+        operationId: getRuns
+        description: Get all the run of an user with respect to some criteria
+        parameters:
+        - in: path
+          name: user_id
+          description: ID of User
+          required: true
+          schema:
+            type: integer
+        - name: start-date
+          in: query
+          description: If this parameter is set all the runs returned will have a start_date not less than date-start
+          schema:
+            type: string
+            format: date
+        - name: finish-date
+          in: query
+          description: If this parameter is set all the runs returned will have a start_date not greater than date-finish
+          schema:
+            type: string
+            format: date
+        responses:
+          '400':
+            $ref: '#/components/responses/BadRequest'
+          '404':
+            $ref: '#/components/responses/NotFound'
+          '200':
+            description: A, possibly empty, list of runs
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ResponseRun'
+                  minItems: 0
+
+    /user/{user_id}/runs/{run_id}:
+      get:
+        operationId: getSingleRun
+        description: Get The run *run_id* of the user *user_id*
+        parameters:
+          - in: path
+            name: user_id
+            description: ID of the user
+            required: true
+            schema:
+              type: integer
+          - in: path
+            name: run_id
+            description: ID of the Run
+            required: true
+            schema:
+              type: integer
+        responses:
+          '404':
+            $ref: '#/components/responses/NotFound'
+          '200':
+            description: The run of the user
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ResponseRun'

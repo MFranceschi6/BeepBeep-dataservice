@@ -1,10 +1,4 @@
-# BeepBeep-dataservice :runner:
-
-## API Documentation :trollface:
-
-This microservice provide a standard API, the documentation can be found at this [temporary page](https://mfranceschi6.github.io/slate/)
-
-## How to run It :smile:
+# Split the Monolith
 
 BE SURE THAT `python3` and `pip3` are referring to `python 3.7.x`.
 To find your `python` and `pip` version, run this commands:
@@ -27,7 +21,12 @@ Once you found commands refering to the correct version, use them in the followi
 
   ```bash
   cd <YOUR_DIRECTORY>/BeepBeep-dataservice/
+  sed -ie 's/beepbeep/Runnerly/g' requirements.txt
+  echo -e "flask_cors\n" >> requirements.txt
   pip3 install -r requirements.txt
   python3 setup.py develop
   beepbeep-dataservice
   ```
+  
+
+
