@@ -58,15 +58,16 @@ components:
         - total_elevation_gain
 
     ResponseRun:
+      type: object
       allOf:
         - type: object
           properties:
             id:
               type: integer
-              description: The ID of the run.
-          required:
-            - id
+              description: The ID of the Run
         - $ref: '#/components/schemas/Run'
+
+
 
 
 
@@ -172,43 +173,6 @@ components:
 
 
 paths:
-    /runs/{runner_id}:
-      get:
-       operationId: getRuns
-       description: Get all the run of an user with respect to some criteria
-       parameters:
-          - in: path
-            name: runner_id
-            description: ID of Runner
-            required: true
-            schema:
-              type: integer
-          - name: start-date
-            in: query
-            description: If this parameter is set all the runs returned will have a start_date not less than date-start
-            schema:
-              type: string
-              format: date
-          - name: finish-date
-            in: query
-            description: If this parameter is set all the runs returned will have a start_date not greater than date-finish
-            schema:
-              type: string
-              format: date
-       responses:
-          '400':
-            $ref: '#/components/responses/BadRequest'
-          '200':
-            description: A, possibly empty, list of runs
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/ResponseRun'
-                  minItems: 0
-
-
     /add_runs:
       post:
         operationId: addRuns
@@ -312,3 +276,68 @@ paths:
             description: User succesfully removed
           '404':
             $ref: '#/components/responses/NotFound'
+
+    /user/{user_id}/runs:
+      get:
+        operationId: getRuns
+        description: Get all the run of an user with respect to some criteria
+        parameters:
+        - in: path
+          name: user_id
+          description: ID of User
+          required: true
+          schema:
+            type: integer
+        - name: start-date
+          in: query
+          description: If this parameter is set all the runs returned will have a start_date not less than date-start
+          schema:
+            type: string
+            format: date
+        - name: finish-date
+          in: query
+          description: If this parameter is set all the runs returned will have a start_date not greater than date-finish
+          schema:
+            type: string
+            format: date
+        responses:
+          '400':
+            $ref: '#/components/responses/BadRequest'
+          '404':
+            $ref: '#/components/responses/NotFound'
+          '200':
+            description: A, possibly empty, list of runs
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ResponseRun'
+                  minItems: 0
+
+    /user/{user_id}/runs/{run_id}:
+      get:
+        operationId: getSingleRun
+        description: Get The run *run_id* of the user *user_id*
+        parameters:
+          - in: path
+            name: user_id
+            description: ID of the user
+            required: true
+            schema:
+              type: integer
+          - in: path
+            name: run_id
+            description: ID of the Run
+            required: true
+            schema:
+              type: integer
+        responses:
+          '404':
+            $ref: '#/components/responses/NotFound'
+          '200':
+            description: The run of the user
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ResponseRun'

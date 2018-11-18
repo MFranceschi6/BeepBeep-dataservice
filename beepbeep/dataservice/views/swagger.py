@@ -5,7 +5,7 @@ from flask import request, jsonify
 from beepbeep.dataservice.database import db, User, Run
 from sqlalchemy import and_
 from datetime import datetime
-from .util import bad_response
+from .util import bad_response, existing_user
 import json
 from json import loads
 
@@ -31,10 +31,12 @@ def add_runs():
 
 
 @api.operation('getRuns')
-def get_runs(runner_id):
+def get_runs(user_id):
     start_date = request.args.get('start-date')
     finish_date = request.args.get('finish-date')
     fun = True
+    if not existing_user(user_id):
+        return bad_response(404, 'Error no User with ID '+ user_id)
     try:
         if start_date is not None:
             start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
@@ -47,9 +49,19 @@ def get_runs(runner_id):
             fun = and_(fun, Run.start_date <= start_date)
     except ValueError:
         return bad_response(404, 'Error in parsing the finish_date parameter: ' + finish_date + ' is not a valid date')
-    fun = and_(fun, Run.runner_id == runner_id)
+    fun = and_(fun, Run.runner_id == user_id)
     runs = db.session.query(Run).filter(fun)
     return jsonify([run.to_json() for run in runs])
+
+
+@api.operation('getSingleRun')
+def get_single_run(user_id, run_id):
+    if not existing_user(user_id):
+        return bad_response(404, 'Error, No user with ID '+str(user_id))
+    q = db.session.query(Run).filter(and_(Run.id == run_id, Run.runner_id == user_id))
+    if q.count() == 0:
+        return bad_response(404, 'Error, No run with ID '+str(run_id)+' for User')
+    return q.first().to_json()
 
 
 @api.operation('getUsers')
@@ -75,8 +87,7 @@ def get_single_user(user_id):
 @api.operation('addUser')
 def add_single_user():
     u = User.from_json(request.json)
-    q = db.session.query(User).filter(User.email == u.email)
-    if q.count > 0:
+    if existing_user(email=u.email):
         return bad_response(400, 'Error, exists already an user with the email: ' + u.email)
     db.session.add(u)
     db.session.commit()
