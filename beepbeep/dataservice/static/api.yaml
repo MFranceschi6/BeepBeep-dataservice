@@ -87,6 +87,7 @@ components:
         strava_token:
           type: string
           description: The strava_token of the user
+          nullable: true
         age:
           type: integer
           description: The age of the user
@@ -210,6 +211,8 @@ paths:
                       type: array
                       items:
                         $ref: '#/components/schemas/ExistingUser'
+                  required:
+                    - users
 
       post:
         operationId: addUser
@@ -299,7 +302,12 @@ paths:
           description: If this parameter is set all the runs returned will have a start_date not greater than date-finish
           schema:
             type: string
-            format: date
+            format: date-time
+        - name: from-id
+          in: query
+          description: If this parameter is set all the runs returned will have an id greater than from-id
+          schema:
+            type: integer
         responses:
           '400':
             $ref: '#/components/responses/BadRequest'

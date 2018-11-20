@@ -34,21 +34,18 @@ def add_runs():
 def get_runs(user_id):
     start_date = request.args.get('start-date')
     finish_date = request.args.get('finish-date')
+    max_id = request.args.get('from-id')
     fun = True
     if not existing_user(user_id):
-        return bad_response(404, 'Error no User with ID '+ user_id)
-    try:
-        if start_date is not None:
-            start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
-            fun = and_(fun, start_date <= Run.start_date)
-    except ValueError:
-        return bad_response(404, 'Error in parsing the start_date parameter: ' + start_date + ' is not a valid date')
-    try:
-        if finish_date is not None:
-            finish_date = datetime.strptime(finish_date, '%Y-%m-%dT%H:%M:%SZ')
-            fun = and_(fun, Run.start_date <= start_date)
-    except ValueError:
-        return bad_response(404, 'Error in parsing the finish_date parameter: ' + finish_date + ' is not a valid date')
+        return bad_response(404, 'Error no User with ID ' + user_id)
+    if start_date is not None:
+        start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
+        fun = and_(fun, start_date <= Run.start_date)
+    if finish_date is not None:
+        finish_date = datetime.strptime(finish_date, '%Y-%m-%dT%H:%M:%SZ')
+        fun = and_(fun, Run.start_date <= start_date)
+    if max_id is not None:
+        fun = and_(fun, Run.id > max_id)
     fun = and_(fun, Run.runner_id == user_id)
     runs = db.session.query(Run).filter(fun)
     return jsonify([run.to_json() for run in runs])
