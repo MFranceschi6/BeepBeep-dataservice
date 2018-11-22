@@ -114,7 +114,7 @@ def update_single_user(user_id):
 
 @api.operation('deleteSingleUser')
 def delete_single_user(user_id):
-    q = db.query(User).filter(User.id == user_id)
+    q = db.session.query(User).filter(User.id == user_id)
     if q.count() == 0:
         return bad_response(404, 'No user with ID ' + str(user_id))
     db.session.delete(q.first())
