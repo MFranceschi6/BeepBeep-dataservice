@@ -135,6 +135,47 @@ components:
               description: the ID of the user
         - $ref: '#/components/schemas/UserTemplate'
 
+    UpdateUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The id of the user
+        email:
+          type: string
+          format: email
+          description: The email of the user
+        firstname:
+          type: string
+          description: The firstname of the user
+        lastname:
+          type: string
+          description: The lastname of the user
+        strava_token:
+          type: string
+          description: The strava_token of the user
+          nullable: true
+        age:
+          type: integer
+          description: The age of the user
+        weight:
+          type: number
+          format: float
+          description: The weight of the user
+        max_hr:
+          type: integer
+          description: The max heartrate of the user
+        rest_hr:
+          type: integer
+          description: The at rest heartrate of the user
+        vo2max:
+          type: number
+          format: float
+          description: I have no clue what this is
+      required:
+        - id
+
+
 
     Error:
       type: object
@@ -262,7 +303,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExistingUser'
+                $ref: '#/components/schemas/UpdateUser'
         responses:
           '204':
             description: User succesfully updated

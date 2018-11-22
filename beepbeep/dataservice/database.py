@@ -41,7 +41,8 @@ class User(db.Model):
         u = User()
         for attr in ('email', 'firstname', 'lastname', 'age', 'weight',
                      'max_hr', 'rest_hr', 'vo2max'):
-            setattr(u, attr, schema[attr])
+            if attr in schema:
+                setattr(u, attr, schema[attr])
 
         if 'strava_token' in schema:
             setattr(u, 'strava_token', schema['strava_token'])
