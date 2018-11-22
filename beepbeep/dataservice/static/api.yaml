@@ -231,7 +231,7 @@ paths:
             $ref: '#/components/responses/BadRequest'
 
 
-    /user/{user_id}:
+    /users/{user_id}:
       parameters:
       - in: path
         name: user_id
@@ -280,7 +280,7 @@ paths:
           '404':
             $ref: '#/components/responses/NotFound'
 
-    /user/{user_id}/runs:
+    /users/{user_id}/runs:
       get:
         operationId: getRuns
         description: Get all the run of an user with respect to some criteria
@@ -323,7 +323,7 @@ paths:
                     $ref: '#/components/schemas/ResponseRun'
                   minItems: 0
 
-    /user/{user_id}/runs/{run_id}:
+    /users/{user_id}/runs/{run_id}:
       get:
         operationId: getSingleRun
         description: Get The run *run_id* of the user *user_id*
