@@ -337,7 +337,7 @@ paths:
           description: Datetime in %Y-%m-%dT%H:%M:%SZ format. If this parameter is set all the runs returned will have a start_date not less than date-start
           schema:
             type: string
-            format: date
+            format: date-time
         - name: finish-date
           in: query
           description:  Datetime in %Y-%m-%dT%H:%M:%SZ format. If this parameter is set all the runs returned will have a start_date not greater than date-finish

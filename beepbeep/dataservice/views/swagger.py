@@ -108,7 +108,6 @@ def update_single_user(user_id):
         if q.count() > 0:
             return bad_response(400, 'Trying to update the email of the user with: ' + u.email + 'but another user '
                                                                                                  'already has that '
-
                                                                                                  'email')
     for attr in request.json:
         setattr(us, attr, request.json[attr])
