@@ -22,6 +22,8 @@ class User(db.Model):
     rest_hr = db.Column(db.Integer)
     vo2max = db.Column(db.Numeric(4, 2))
     is_active = db.Column(db.Boolean, default=True)
+    total_speed = db.Column(db.Float)
+    total_runs = db.Column(db.Integer)
     is_anonymous = False
 
     def to_json(self, secure=False):
@@ -48,6 +50,8 @@ class User(db.Model):
             setattr(u, 'strava_token', schema['strava_token'])
         if 'id' in schema:
             setattr(u, 'id', schema['id'])
+        u.total_speed = 0.0
+        u.total_runs = 0
         return u
 
     def get_id(self):
@@ -117,5 +121,7 @@ def init_database():
     user.rest_hr = 50
     user.vo2max = 63
     user.strava_token = os.environ.get('STRAVA_TOKEN')
+    user.total_runs = 0
+    user.total_speed = 0.0
     db.session.add(user)
     db.session.commit()

@@ -6,8 +6,7 @@ from beepbeep.dataservice.database import db, User, Run
 from sqlalchemy import and_
 from datetime import datetime
 from .util import bad_response, existing_user
-import json
-from json import loads
+
 
 HERE = os.path.dirname(__file__)
 YML = os.path.join(HERE, '..', 'static', 'api.yaml')
@@ -20,9 +19,14 @@ OBJECTIVES = os.environ['OBJECTIVES']
 def add_runs():
     added = 0
     for user, runs in request.json.items():
-        runner_id = int(user)
+        u = db.session.query(User).filter(User.id == int(user)).first()
         for run in runs:
-            db_run = Run.from_json(run, runner_id)
+            db_run = Run.from_json(run, u.id)
+            q = db.session.query(Run).filter(Run.strava_id == db_run.strava_id)
+            if q.count() > 0:
+                continue
+            u.total_speed += db_run.average_speed
+            u.total_runs += 1
             db.session.add(db_run)
             added += 1
 
@@ -32,11 +36,22 @@ def add_runs():
     return "", 204
 
 
+@api.operation('getAverage')
+def get_average_speed(user_id):
+    q = db.session.query(User).filter(User.id == user_id)
+    if q.count() == 0:
+        return bad_response(404, 'Error no User with ID ' + user_id)
+    u = q.first()
+    return {'average_speed': float('%.2f' % (u.total_speed / u.total_runs))}
+
+
 @api.operation('getRuns')
 def get_runs(user_id):
     start_date = request.args.get('start-date')
     finish_date = request.args.get('finish-date')
     max_id = request.args.get('from-id')
+    page_size = request.args.get('page-size')
+    skip_number = request.args.get('skip-number')
     fun = True
     if not existing_user(user_id):
         return bad_response(404, 'Error no User with ID ' + user_id)
@@ -50,6 +65,10 @@ def get_runs(user_id):
         fun = and_(fun, Run.id > max_id)
     fun = and_(fun, Run.runner_id == user_id)
     runs = db.session.query(Run).filter(fun)
+    if skip_number is not None:
+        runs = runs.offset(skip_number)
+    if page_size is not None:
+        runs = runs.limit(page_size)
     return jsonify([run.to_json() for run in runs])
 
 

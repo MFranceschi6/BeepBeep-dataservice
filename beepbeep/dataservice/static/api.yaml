@@ -321,6 +321,32 @@ paths:
           '404':
             $ref: '#/components/responses/NotFound'
 
+    /users/{user_id}/average:
+      get:
+        operationId: getAverage
+        description: Get the average speed for all the runs of the user
+        parameters:
+          - in: path
+            name: user_id
+            description: The ID of the user
+            required: true
+            schema:
+              type: integer
+        responses:
+          '404':
+            $ref: '#/components/responses/NotFound'
+          '200':
+            description: The average speed of the user
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    average_speed:
+                      type: number
+                      format: float
+                      description: a float with 2 decimals which indicates the average speed of the user in m/s
+
     /users/{user_id}/runs:
       get:
         operationId: getRuns
@@ -328,7 +354,7 @@ paths:
         parameters:
         - in: path
           name: user_id
-          description: ID of User
+          description: The ID of the User
           required: true
           schema:
             type: integer
@@ -349,6 +375,18 @@ paths:
           description: If this parameter is set all the runs returned will have an id greater than from-id
           schema:
             type: integer
+        - name: page-size
+          in: query
+          description: How many entries are present in a page. If this parameter is set the request will return at most page-size items
+          schema:
+            type: integer
+            minimum: 1
+        - name: skip-number
+          in: query
+          description: How many entries skip. If this parameter is set the request will skip the first skip-number elements and returns only entries after them
+          schema:
+            type: integer
+            minimum: 1
         responses:
           '400':
             $ref: '#/components/responses/BadRequest'
