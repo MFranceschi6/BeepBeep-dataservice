@@ -42,7 +42,8 @@ def get_average_speed(user_id):
     if q.count() == 0:
         return bad_response(404, 'Error no User with ID ' + user_id)
     u = q.first()
-    return {'average_speed': float('%.2f' % (u.total_speed / u.total_runs))}
+    average_speed = u.total_speed / u.total_runs if u.total_runs > 0 else 0
+    return {'average_speed': float('%.2f' % average_speed)}
 
 
 @api.operation('getRuns')
