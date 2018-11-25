@@ -51,8 +51,16 @@ def get_runs(user_id):
     start_date = request.args.get('start-date')
     finish_date = request.args.get('finish-date')
     max_id = request.args.get('from-id')
-    page_size = request.args.get('page-size')
-    skip_number = request.args.get('skip-number')
+    page = int(request.args.get('page'))
+    per_page = int(request.args.get('per_page'))
+
+    print("get Runs lol")
+    if per_page is None:
+        per_page = 10 # TODO: write in doc that per_page is 10 by default
+
+    if page is None:
+        per_page = None
+
     fun = True
     if not existing_user(user_id):
         return bad_response(404, 'Error no User with ID ' + user_id)
@@ -66,10 +74,12 @@ def get_runs(user_id):
         fun = and_(fun, Run.id > max_id)
     fun = and_(fun, Run.runner_id == user_id)
     runs = db.session.query(Run).filter(fun)
-    if skip_number is not None:
-        runs = runs.offset(skip_number)
-    if page_size is not None:
-        runs = runs.limit(page_size)
+
+    if page is not None and per_page is not None:
+        offset = page * per_page
+        limit  = offset + per_page
+        runs = runs.offset(offset).limit(per_page)
+
     return jsonify([run.to_json() for run in runs])
 
 
