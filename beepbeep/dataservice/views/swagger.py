@@ -54,9 +54,8 @@ def get_runs(user_id):
     page = int(request.args.get('page'))
     per_page = int(request.args.get('per_page'))
 
-    print("get Runs lol")
     if per_page is None:
-        per_page = 10 # TODO: write in doc that per_page is 10 by default
+        per_page = 10
 
     if page is None:
         per_page = None
@@ -77,7 +76,6 @@ def get_runs(user_id):
 
     if page is not None and per_page is not None:
         offset = page * per_page
-        limit  = offset + per_page
         runs = runs.offset(offset).limit(per_page)
 
     return jsonify([run.to_json() for run in runs])
