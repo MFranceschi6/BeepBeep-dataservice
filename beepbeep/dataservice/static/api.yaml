@@ -375,15 +375,15 @@ paths:
           description: If this parameter is set all the runs returned will have an id greater than from-id
           schema:
             type: integer
-        - name: page-size
+        - name: page
           in: query
-          description: How many entries are present in a page. If this parameter is set the request will return at most page-size items
+          description: The page you want retrive with "per_page" entries
           schema:
             type: integer
-            minimum: 1
-        - name: skip-number
+            minimum: 0
+        - name: per_page
           in: query
-          description: How many entries skip. If this parameter is set the request will skip the first skip-number elements and returns only entries after them
+          description: How many entries you want to retrive in a page default to 10 if the page parameter is set. This value is also used to calculate the offset of items in order to display a page
           schema:
             type: integer
             minimum: 1
