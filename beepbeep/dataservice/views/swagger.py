@@ -2,7 +2,7 @@ import os
 
 from flakon import SwaggerBlueprint, util
 from flask import request, jsonify
-from beepbeep.dataservice.database import db, User, Run
+from beepbeep.dataservice.database import db, User, Run, ReportPeriodicity
 from sqlalchemy import and_
 from datetime import datetime
 from .util import bad_response, existing_user
@@ -51,14 +51,17 @@ def get_runs(user_id):
     start_date = request.args.get('start-date')
     finish_date = request.args.get('finish-date')
     max_id = request.args.get('from-id')
-    page = int(request.args.get('page'))
-    per_page = int(request.args.get('per_page'))
+    page = request.args.get('page')
+    per_page = request.args.get('per_page')
 
     if per_page is None:
         per_page = 10
+    per_page = int(per_page)
 
     if page is None:
         per_page = None
+    else:
+        page = int(page)
 
     fun = True
     if not existing_user(user_id):
@@ -136,9 +139,11 @@ def update_single_user(user_id):
         if q.count() > 0:
             return bad_response(400, 'Trying to update the email of the user with: ' + u.email + 'but another user '
                                                                                                  'already has that '
+                 
                                                                                                  'email')
     for attr in request.json:
         setattr(us, attr, request.json[attr])
+    print(us)
     db.session.commit()
     return "", 204
 

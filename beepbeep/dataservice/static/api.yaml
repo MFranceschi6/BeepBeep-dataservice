@@ -68,6 +68,19 @@ components:
         - $ref: '#/components/schemas/Run'
 
 
+    ReportPeriodicity:
+      type: string
+      enum:
+        - 'no'
+        - daily
+        - weekly
+        - monthly
+      description: >
+        Values :
+          * `no` - The user won't receive periodic reports
+          * `daily` - The user receives a daily periodic report
+          * `weekly` - The user receives a weekly periodic report
+          * `monthly` - The user receives a monthly periodic report
 
 
 
@@ -122,6 +135,8 @@ components:
             id:
               type: integer
               description: the ID of the user
+            report_periodicity:
+              $ref: '#/components/schemas/ReportPeriodicity'
           required:
             - id
         - $ref: '#/components/schemas/UserTemplate'
@@ -133,6 +148,8 @@ components:
             id:
               type: integer
               description: the ID of the user
+            report_periodicity:
+              $ref: '#/components/schemas/ReportPeriodicity'
         - $ref: '#/components/schemas/UserTemplate'
 
     UpdateUser:
@@ -172,6 +189,8 @@ components:
           type: number
           format: float
           description: I have no clue what this is
+        report_periodicity:
+          $ref: '#/components/schemas/ReportPeriodicity'
       required:
         - id
 

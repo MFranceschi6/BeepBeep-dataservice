@@ -4,8 +4,39 @@ from datetime import datetime
 from decimal import Decimal
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Enum
+import enum
 
 db = SQLAlchemy()
+
+class ReportPeriodicity(enum.Enum):
+    no     = 'no'
+    daily  = 'daily'
+    weekly = 'weekly'
+    monthly = 'monthly'
+
+    @staticmethod
+    def to_json(periodicity):
+        if periodicity.value == ReportPeriodicity.no.value:
+            return 'no'
+        if periodicity.value == ReportPeriodicity.daily.value:
+            return 'daily'
+        if periodicity.value == ReportPeriodicity.weekly.value:
+            return 'weekly'
+        if periodicity.value == ReportPeriodicity.monthly.value:
+            return 'monthly'
+
+    @staticmethod
+    def from_json(periodicity):
+        if periodicity == 'no':
+            return ReportPeriodicity.no
+        if periodicity == 'daily':
+            return ReportPeriodicity.daily
+        if periodicity == 'weekly':
+            return ReportPeriodicity.weekly
+        if periodicity == 'monthly':
+            return ReportPeriodicity.monthly
+
 
 
 class User(db.Model):
@@ -24,6 +55,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     total_speed = db.Column(db.Float)
     total_runs = db.Column(db.Integer)
+    report_periodicity = db.Column(Enum(ReportPeriodicity), default=ReportPeriodicity.no)
     is_anonymous = False
 
     def to_json(self, secure=False):
@@ -34,6 +66,7 @@ class User(db.Model):
             if isinstance(value, Decimal):
                 value = float(value)
             res[attr] = value
+            res['report_periodicity'] = ReportPeriodicity.to_json(self.report_periodicity)
         if secure:
             res['strava_token'] = self.strava_token
         return res
@@ -50,6 +83,10 @@ class User(db.Model):
             setattr(u, 'strava_token', schema['strava_token'])
         if 'id' in schema:
             setattr(u, 'id', schema['id'])
+        if 'report_periodicity' in schema:
+            setattr(u, 'report_periodicity', ReportPeriodicity.from_json(schema['report_periodicity']))
+        else:
+            setattr(u, 'report_periodicity', ReportPeriodicity.no)
         u.total_speed = 0.0
         u.total_runs = 0
         return u
@@ -123,5 +160,6 @@ def init_database():
     user.strava_token = os.environ.get('STRAVA_TOKEN')
     user.total_runs = 0
     user.total_speed = 0.0
+    user.report_periodicity = ReportPeriodicity.no
     db.session.add(user)
     db.session.commit()
