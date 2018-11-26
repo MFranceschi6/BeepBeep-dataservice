@@ -383,7 +383,7 @@ paths:
             minimum: 0
         - name: per_page
           in: query
-          description: How many entries you want to retrive in a page. This value is also used to calculate the offset of items in order to display a page
+          description: How many entries you want to retrive in a page default to 10 if the page parameter is set. This value is also used to calculate the offset of items in order to display a page
           schema:
             type: integer
             minimum: 1
