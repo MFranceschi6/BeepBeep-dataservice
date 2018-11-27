@@ -10,32 +10,32 @@ import enum
 db = SQLAlchemy()
 
 class ReportPeriodicity(enum.Enum):
-    no     = 'no'
-    daily  = 'daily'
-    weekly = 'weekly'
-    monthly = 'monthly'
+    No     = 'No'
+    Daily  = 'Daily'
+    Weekly = 'Weekly'
+    Monthly = 'Monthly'
 
     @staticmethod
     def to_json(periodicity):
-        if periodicity.value == ReportPeriodicity.no.value:
-            return 'no'
-        if periodicity.value == ReportPeriodicity.daily.value:
-            return 'daily'
-        if periodicity.value == ReportPeriodicity.weekly.value:
-            return 'weekly'
-        if periodicity.value == ReportPeriodicity.monthly.value:
-            return 'monthly'
+        if periodicity.value == ReportPeriodicity.No.value:
+            return 'No'
+        if periodicity.value == ReportPeriodicity.Daily.value:
+            return 'Daily'
+        if periodicity.value == ReportPeriodicity.Weekly.value:
+            return 'Weekly'
+        if periodicity.value == ReportPeriodicity.Monthly.value:
+            return 'Monthly'
 
     @staticmethod
     def from_json(periodicity):
-        if periodicity == 'no':
-            return ReportPeriodicity.no
-        if periodicity == 'daily':
-            return ReportPeriodicity.daily
-        if periodicity == 'weekly':
-            return ReportPeriodicity.weekly
-        if periodicity == 'monthly':
-            return ReportPeriodicity.monthly
+        if periodicity == 'No':
+            return ReportPeriodicity.No
+        if periodicity == 'Daily':
+            return ReportPeriodicity.Daily
+        if periodicity == 'Weekly':
+            return ReportPeriodicity.Weekly
+        if periodicity == 'Monthly':
+            return ReportPeriodicity.Monthly
 
 
 
@@ -55,7 +55,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     total_speed = db.Column(db.Float)
     total_runs = db.Column(db.Integer)
-    report_periodicity = db.Column(Enum(ReportPeriodicity), default=ReportPeriodicity.no)
+    report_periodicity = db.Column(Enum(ReportPeriodicity), default=ReportPeriodicity.No)
     is_anonymous = False
 
     def to_json(self, secure=False):
@@ -86,7 +86,7 @@ class User(db.Model):
         if 'report_periodicity' in schema:
             setattr(u, 'report_periodicity', ReportPeriodicity.from_json(schema['report_periodicity']))
         else:
-            setattr(u, 'report_periodicity', ReportPeriodicity.no)
+            setattr(u, 'report_periodicity', ReportPeriodicity.No)
         u.total_speed = 0.0
         u.total_runs = 0
         return u
@@ -163,6 +163,6 @@ def init_database():
     user.strava_token = os.environ.get('STRAVA_TOKEN')
     user.total_runs = 0
     user.total_speed = 0.0
-    user.report_periodicity = ReportPeriodicity.no
+    user.report_periodicity = ReportPeriodicity.No
     db.session.add(user)
     db.session.commit()

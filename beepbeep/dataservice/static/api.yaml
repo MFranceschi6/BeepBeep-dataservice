@@ -71,16 +71,16 @@ components:
     ReportPeriodicity:
       type: string
       enum:
-        - 'no'
-        - daily
-        - weekly
-        - monthly
+        - 'No'
+        - Daily
+        - Weekly
+        - Monthly
       description: >
         Values :
-          * `no` - The user won't receive periodic reports
-          * `daily` - The user receives a daily periodic report
-          * `weekly` - The user receives a weekly periodic report
-          * `monthly` - The user receives a monthly periodic report
+          * `No` - The user won't receive periodic reports
+          * `Daily` - The user receives a daily periodic report
+          * `Weekly` - The user receives a weekly periodic report
+          * `Monthly` - The user receives a monthly periodic report
 
 
 

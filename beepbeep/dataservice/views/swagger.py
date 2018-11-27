@@ -1,18 +1,18 @@
 import os
 
-from flakon import SwaggerBlueprint, util
+from flakon import SwaggerBlueprint, request_utils
 from flask import request, jsonify
 from beepbeep.dataservice.database import db, User, Run, ReportPeriodicity
 from sqlalchemy import and_
 from datetime import datetime
 from .util import bad_response, existing_user
+from requests import RequestException
+from stravalib import client
 
 
 HERE = os.path.dirname(__file__)
 YML = os.path.join(HERE, '..', 'static', 'api.yaml')
 api = SwaggerBlueprint('API', __name__, swagger_spec=YML)
-CHALLENGES = os.environ['CHALLENGES']
-OBJECTIVES = os.environ['OBJECTIVES']
 
 
 @api.operation('addRuns')
@@ -156,6 +156,14 @@ def delete_single_user(user_id):
     q = db.session.query(User).filter(User.id == user_id)
     if q.count() == 0:
         return bad_response(404, 'No user with ID ' + str(user_id))
+    u = q.first()
+    try:
+        request_utils.delete_request_retry(request_utils.challenges_endpoint(u.id))
+        request_utils.delete_request_retry(request_utils.objectives_endpoint(u.id))
+    except RequestException:
+        return bad_response(400, 'Error removing the user')
+    c = client.Client(access_token=u.strava_token)
+    c.deauthorize()
     db.session.delete(q.first())
     db.session.commit()
     return "", 204
