@@ -1,4 +1,4 @@
-# BeepBeep-dataservice :runner:
+# BeepBeep-dataservice :runner: [![Build Status](https://travis-ci.org/MFranceschi6/BeepBeep-dataservice.svg?branch=master)](https://travis-ci.org/MFranceschi6/BeepBeep-dataservice) [![Coverage Status](https://coveralls.io/repos/github/MFranceschi6/BeepBeep-dataservice/badge.svg?branch=master)](https://coveralls.io/github/MFranceschi6/BeepBeep-dataservice?branch=master)
 
 ## API Documentation :trollface:
 
