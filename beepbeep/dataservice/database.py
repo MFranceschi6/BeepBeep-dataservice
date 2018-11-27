@@ -127,7 +127,10 @@ class Run(db.Model):
         r = Run()
         for attr in ('title', 'description', 'strava_id', 'distance', 'elapsed_time', 'average_speed',
                      'average_heartrate', 'total_elevation_gain'):
-            setattr(r, attr, schema[attr])
+            if attr in schema:
+                setattr(r, attr, schema[attr])
+            else:
+                setattr(r, attr, None)
 
         setattr(r, 'start_date', datetime.fromtimestamp(schema['start_date']))
         if 'runned_id' in schema:

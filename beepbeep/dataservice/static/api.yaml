@@ -30,11 +30,12 @@ components:
           format: float
           description: The distance the user run expressed in meters
         start_date:
-          type: integer
-          format: timestamp
+          type: number
+          format: float
           description: The timestamp when this run was made
         elapsed_time:
-          type: integer
+          type: number
+          format: float
           description: The total time that this run took to complete
         average_speed:
           type: number
@@ -49,7 +50,6 @@ components:
           description: The id of the user who made this run
       required:
         - title
-        - description
         - strava_id
         - distance
         - start_date
