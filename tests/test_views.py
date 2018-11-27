@@ -1,4 +1,4 @@
 
 
-def first_test():
+def test_first():
     pass
