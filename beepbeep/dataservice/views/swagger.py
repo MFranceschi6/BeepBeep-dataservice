@@ -19,7 +19,10 @@ OBJECTIVES = os.environ['OBJECTIVES']
 def add_runs():
     added = 0
     for user, runs in request.json.items():
-        u = db.session.query(User).filter(User.id == int(user)).first()
+        q = db.session.query(User).filter(User.id == int(user))
+        if q.count() == 0:
+            continue
+        u = q.first()
         for run in runs:
             db_run = Run.from_json(run, u.id)
             q = db.session.query(Run).filter(Run.strava_id == db_run.strava_id)
