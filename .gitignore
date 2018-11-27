@@ -10,4 +10,7 @@
 
 .src/
 
+.coverage
+.pytest_cache/
+
 requirements.txte
