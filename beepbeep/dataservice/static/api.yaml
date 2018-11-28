@@ -303,6 +303,12 @@ paths:
       get:
         operationId: getSingleUser
         description: Returns a specific User
+        parameters:
+          - in: query
+            name: secure
+            description: Indicates if it's secure to send information
+            schema:
+              type: boolean
         responses:
           '200':
             description: Information about an User

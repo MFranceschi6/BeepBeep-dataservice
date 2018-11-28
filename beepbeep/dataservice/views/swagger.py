@@ -111,10 +111,11 @@ def get_users():
 
 @api.operation('getSingleUser')
 def get_single_user(user_id):
+    secure = request.args.get('secure', False)
     q = db.session.query(User).filter(User.id == user_id)
     if q.count() == 0:
         return bad_response(404, 'No user with ID ' + str(user_id))
-    return q.first().to_json(secure=False)
+    return q.first().to_json(secure=secure)
 
 
 @api.operation('addUser')
