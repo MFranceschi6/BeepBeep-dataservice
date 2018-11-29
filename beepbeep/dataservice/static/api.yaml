@@ -41,6 +41,10 @@ components:
           type: number
           format: float
           description: The average speed of the run
+        average_heartrate:
+          type: number
+          format: float
+          description: The average heartrate of the athlete during the run
         total_elevation_gain:
           type: number
           format: float
@@ -55,6 +59,7 @@ components:
         - start_date
         - elapsed_time
         - average_speed
+        - average_heartrate
         - total_elevation_gain
 
     ResponseRun:
