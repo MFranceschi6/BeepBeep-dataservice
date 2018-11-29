@@ -163,8 +163,9 @@ def delete_single_user(user_id):
         request_utils.delete_request_retry(request_utils.objectives_endpoint(u.id))
     except RequestException:
         return bad_response(400, 'Error removing the user')
-    c = client.Client(access_token=u.strava_token)
-    c.deauthorize()
+    if u.strava_token is not None:
+        c = client.Client(access_token=u.strava_token)
+        c.deauthorize()
     db.session.delete(q.first())
     db.session.commit()
     return "", 204
