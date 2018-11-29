@@ -58,6 +58,8 @@ class User(db.Model):
     report_periodicity = db.Column(Enum(ReportPeriodicity), default=ReportPeriodicity.No)
     is_anonymous = False
 
+    run = relationship('Run', cascade='delete')
+
     def to_json(self, secure=False):
         res = {}
         for attr in ('id', 'email', 'firstname', 'lastname', 'age', 'weight',
