@@ -1,0 +1,5 @@
+[run]
+omit =
+	beepbeep/dataservice/tests/*
+	beepbeep/dataservice/views/home.py
+	beepbeep/dataservice/run.py
