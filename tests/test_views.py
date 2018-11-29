@@ -170,11 +170,9 @@ def test_verifyall(client, db_instance):
     response = add_user(client, db_instance)
     assert response.status_code == 400
     print(db_instance.session.query(User).count())
-    ################################################################### Test:4 creting new user no id and no email ##########################################
+################################################################### Test:4 creting new user no id and no email ##########################################
     response = add_user4(client, db_instance)
     assert response.status_code == 400
-    print(db_instance.session.query(User).count())
-
 ############################################################## Test:5 add run ################################################################################
     response = client.post('/add_runs', json={
                          1 : 
@@ -237,54 +235,40 @@ def test_verifyall(client, db_instance):
     assert db_instance.session.query(Run.runner_id==1).count()==2
 ########################################################## Test:7 get runs for user 1 ###############################################################################
     response = client.get('/users/1/runs')
-    print(response)
     assert response.status_code == 200
-
 ########################################################### Test:8 getting runs for a user which doesnt exist ##########################################
     response = client.get('/users/2/runs')
-    print(response)
     assert response.status_code == 404
 ############################################################ Test:9 getting single run specifing user and run id #######################################
     response = client.get('/users/1/runs/1')
-    print(response)
     assert response.status_code == 200
     ############################################################ Test:10 getting single run specifing user and run id #######################################
     response = client.get('/users/1/runs/2')
-    print(response)
     assert response.status_code == 200
 ############################################################ Test:11 trying to get a run which doesnt exist for this user #######################################
     response = client.get('/users/1/runs/3')
-    print(response)
     assert response.status_code == 404
 ############################################################ Test:12 verying to get a run for a user who doesnt exist #######################################
     response = client.get('/users/245/runs/1')
-    print(response)
     assert response.status_code == 404
-
 ############################################################ Test:13 trying to get a single user ########################################## 
     response = client.get('/users/1')
-    print(response)
     assert response.status_code == 200
 ############################################################ Test:14 trying to get a user who doesnt exist ############################################## 
     response = client.get('/users/2')
-    print(response)
     assert response.status_code == 404
-    ############################################################ Test:15 updating single user ########################################################## 
+############################################################ Test:15 updating single user ########################################################## 
     response = add_user2(client, db_instance,1)
-    print(response)
     assert response.status_code == 204
     assert db_instance.session.query(User).filter(User.id==1).first().weight==2
- ################# Test:16 updating single user but wiht conflicting path and Json id ########################################################## 
+################# Test:16 updating single user but wiht conflicting path and Json id ########################################################## 
     response = add_user2(client, db_instance,2)
-    print(response)
     assert response.status_code == 400
 ################# Test:17 updating a user that does not exist ########################################################## 
     response = add_user3(client, db_instance)
-    print(response)
     assert response.status_code == 404
-    ################# Test:18 updating a user with conflicting email address ########################################################## 
+################# Test:18 updating a user with conflicting email address ########################################################## 
     response = add_user33(client, db_instance)
-    print(response)
     assert response.status_code == 400
 ################# Test:19 deleting a single user that exist ########################################################## 
     with mock.patch('beepbeep.dataservice.views.swagger.request_utils')as mocked:
@@ -296,7 +280,6 @@ def test_verifyall(client, db_instance):
     assert db_instance.session.query(User).filter(User.id==1).count()==0
 ################ Test:20 deleting again ############################################################################ 
     response = deletinguser(client, db_instance)
-    print(response)
     assert response.status_code == 404
 
 
